@@ -63,10 +63,9 @@ void _but2_callback(void);
 void _but3_callback(void);
 
 void io_init(void);
-char pisca_leds(char set, char counter);
 
-int handle_but(int delay, int counter);
-int handle_but3(int delay, int counter);
+void handle_but(int *delay, int *counter);
+void handle_but3(int *delay, int *counter);
 
 void update_display(int delay, char counter);
 
@@ -161,40 +160,35 @@ void io_init(void) {
     NVIC_SetPriority(BUT3_PIO_ID, 6); // Prioridade 6
 }
 
-char pisca_leds(char set, char counter) {
-}
-
-int handle_but(int delay, int counter) {
+void handle_but(int *delay, int *counter) {
     if (but_pressed) {
-        counter++;
+        *counter++;
     } else if (but_was_pressed) {
-        if (counter < 2500) {
-            delay += 100;
-        } else if (delay > 0) {
-            delay -= 100;
+        if (*counter < 2500) {
+            *delay += 100;
+        } else if (*delay > 0) {
+            *delay -= 100;
         }
-        counter = 0;
+        *counter = 0;
         but_was_pressed = 0;
     }
-    return delay;
 }
 
-int handle_but3(int delay, int counter) {
+void handle_but3(int *delay, int *counter) {
     if (but3_pressed) {
-        counter++;
+        *counter++;
     } else if (but3_was_pressed) {
-        if (counter < 2500 && delay > 0) {
-            delay -= 100;
+        if (*counter < 2500 && *delay > 0) {
+            *delay -= 100;
         }
-        counter = 0;
+        *counter = 0;
         but3_was_pressed = 0;
     }
-    return delay;
 }
 
 void update_display(int delay, char counter) {
     char str[128];
-    sprintf(str, "Freq : %dHz", 500 / delay);
+    sprintf(str, "Freq : %.2fHz", 500.0 / delay);
 
     gfx_mono_draw_filled_rect(0, 16, 128, 8, GFX_PIXEL_CLR);
 
@@ -231,22 +225,17 @@ int main(void) {
     while (1) {
         int originalDelay = delay;
 
-        delay = handle_but(delay, but_counter);
+        handle_but(&delay, &but_counter);
 
         // Stop
         while (pisca_pisca) {
         }
-        delay = handle_but3(delay, but3_counter);
+        handle_but3(&delay, &but3_counter);
 
         timer++;
         delay_ms(1);
 
-        if (delay == 0) {
-            timer = 0;
-            set = 1;
-
-            pio_clear(LED_PIO, LED_IDX_MASK);
-        } else if (timer >= delay) {
+        if (timer >= delay) {
             timer = 0;
             set = !set;
 
