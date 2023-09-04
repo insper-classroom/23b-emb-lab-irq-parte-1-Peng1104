@@ -162,7 +162,7 @@ void io_init(void) {
 
 void handle_but(int *delay, int *counter) {
     if (but_pressed) {
-        *counter++;
+        *counter = *counter + 1;
     } else if (but_was_pressed) {
         if (*counter < 2500) {
             *delay += 100;
@@ -176,7 +176,7 @@ void handle_but(int *delay, int *counter) {
 
 void handle_but3(int *delay, int *counter) {
     if (but3_pressed) {
-        *counter++;
+        *counter = *counter + 1;
     } else if (but3_was_pressed) {
         if (*counter < 2500 && *delay > 0) {
             *delay -= 100;
